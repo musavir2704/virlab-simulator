@@ -389,16 +389,13 @@ body {
 
 /* ==========================================================================
    HUD HIDE/SHOW (MODE TAMPILAN BERSIH / CLEAN VIEW MODE SMARTPHONE)
+   Catatan: Analog, Tombol Naik/Turun, dan Kategori Komponen TETAP AKTIF & TAMPIL
    ========================================================================== */
 
-#game-ui-container.hud-hidden .top-bar-container > div:first-child,
-#game-ui-container.hud-hidden #joystick-zone,
-#game-ui-container.hud-hidden #elevation-controls,
+#game-ui-container.hud-hidden .header-toolbar,
+#game-ui-container.hud-hidden .brand-card,
 #game-ui-container.hud-hidden #terminal-popup,
 #game-ui-container.hud-hidden #toggle-terminal-btn,
-#game-ui-container.hud-hidden #open-right-panel,
-#game-ui-container.hud-hidden #inventory-panel,
-#game-ui-container.hud-hidden #assembly-guide-banner,
 #game-ui-container.hud-hidden #explore-mode-banner,
 #game-ui-container.hud-hidden #hotspot-detail-card {
     opacity: 0 !important;
@@ -407,18 +404,28 @@ body {
     transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-#game-ui-container.hud-hidden #joystick-zone,
-#game-ui-container.hud-hidden #elevation-controls,
+/* Sembunyikan brand-card dan rapikan tinggi agar tombol kategori komponen naik ke posisi atas */
+#game-ui-container.hud-hidden .brand-card {
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#game-ui-container.hud-hidden #terminal-popup,
 #game-ui-container.hud-hidden #toggle-terminal-btn {
     transform: translateY(24px) scale(0.92) !important;
 }
 
 /* Base smooth transition for HUD elements */
-.top-bar-container > div:first-child,
-#joystick-zone,
-#elevation-controls,
+.header-toolbar,
+.brand-card,
+#terminal-popup,
 #toggle-terminal-btn {
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
 }
 
 #btn-floating-hud {

@@ -40,7 +40,7 @@
 
 ### B. Pengguna Smartphone & Tablet (Layar Sentuh)
 * **Mode Layar Penuh (Ikon Kotak Panah):** Ketuk tombol layar penuh pada menu awal atau toolbar atas untuk mengunci layar ke posisi **Landscape (Horizontal)** secara otomatis dan menyembunyikan bilah URL/address bar browser agar pandangan simulasi menjadi maksimal.
-* **Sembunyikan / Tampilkan Menu (Ikon Mata):** Jika tampilan menu menghalangi observasi rig komputer pada layar smartphone, ketuk tombol **Mata Dicoret** pada toolbar atas. Seluruh panel, menu, analog virtual, dan tombol elevasi akan disembunyikan.
+* **Sembunyikan / Tampilkan Menu (Ikon Mata):** Jika tampilan menu toolbar menghalangi observasi rig komputer pada layar smartphone, ketuk tombol **Mata Dicoret** pada toolbar atas. Toolbar atas, status perakitan, dan tombol log akan disembunyikan, sedangkan **Analog, Tombol Naik/Turun Elevasi, dan Tombol Kategori Komponen tetap aktif** sehingga Anda tetap leluasa bergerak dan merakit.
 * **Tombol Pemulih Menu Mengambang:** Saat menu disembunyikan, tombol mengambang transparan **"Tampilkan Menu"** akan hadir di pojok kanan atas. Cukup ketuk satu kali untuk mengembalikan seluruh menu secara instan.
 * **Analog Virtual (Pojok Kiri Bawah):** Geser tuas analog biru untuk berjalan maju, mundur, atau menyamping di dalam laboratorium.
 * **Tombol Elevasi (Pojok Kanan Bawah):**

@@ -15,9 +15,10 @@ Seluruh pembaruan, peningkatan fitur, dan refactoring arsitektur proyek dicatat 
   - Tombol `#btn-fullscreen` pada bilah navigasi utama dan `#btn-start-fullscreen` pada layar menu awal (Start Menu).
   - Pintasan keyboard `F` (*Desktop Shortcut*) untuk mengaktifkan/menonaktifkan layar penuh secara instan.
   - Sinkronisasi ikon status (`fa-expand` vs `fa-compress`) secara real-time via event listener `fullscreenchange`.
-* **Mode Tampilan Bersih / Sembunyikan & Tampilkan Menu (HUD Toggle System):**
-  - Tombol `#btn-toggle-hud` untuk menyembunyikan seluruh overlay menu yang menghalangi pandangan (Top Bar, Dropdown Kategori, Joystick Virtual, Kontrol Elevasi, Sistem Log Terminal, dan Banner).
-  - Animasi transisi halus (`0.3s cubic-bezier`) saat elemen HUD menghilang ke atas dan kontrol virtual meluncur ke bawah.
+* **Mode Tampilan Bersih Selektif / Sembunyikan & Tampilkan Menu (HUD Toggle System):**
+  - Tombol `#btn-toggle-hud` untuk menyembunyikan toolbar atas (`.header-toolbar`), kartu brand (`.brand-card`), dan tombol sistem log (`#toggle-terminal-btn`).
+  - **Analog (`#joystick-zone`), Tombol Naik/Turun Elevasi (`#elevation-controls`), dan Tombol Kategori Komponen (`#toggle-left-btn`) TETAP AKTIF & DITAMPILKAN**, sehingga pengguna tetap leluasa menggerakkan posisi kamera, menyesuaikan ketinggian pandang, dan memilih komponen perakitan.
+  - Animasi transisi halus (`0.3s cubic-bezier`) saat kartu brand mengecil dan tombol kategori komponen otomatis meluncur rapi ke posisi paling atas.
   - Tombol mengambang ergonomis (`#btn-floating-hud`) berdesain *glassmorphism* di pojok layar dengan pendaran lembut yang memungkinkan pengguna memulihkan menu hanya dengan 1 ketukan.
   - Pintasan keyboard `H` (*Clean View Shortcut*) untuk menyembunyikan/menampilkan menu pada desktop.
   - Kanvas interaksi 3D tetap aktif 100% sehingga pengguna dapat bebas mengamati rig, memutar sudut pandang, zoom, dan berinteraksi dengan saklar daya.

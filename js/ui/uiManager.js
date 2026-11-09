@@ -587,8 +587,8 @@ export function toggleHUD(state) {
             if (icon) icon.className = 'fas fa-eye text-base';
             toggleHudBtn.title = 'Tampilkan Menu (H)';
         }
-        showToast('Menu disembunyikan. Ketuk "Tampilkan Menu" untuk membuka kembali.', false, false);
-        log('Tampilan menu & HUD disembunyikan (Mode Layar Bersih).');
+        showToast('Menu disembunyikan. Analog, elevasi, dan kategori tetap aktif!', false, false);
+        log('Toolbar menu disembunyikan (Analog, elevasi, dan kategori komponen tetap aktif).');
     } else {
         gameUi.classList.remove('hud-hidden');
         if (floatingHudBtn) {
