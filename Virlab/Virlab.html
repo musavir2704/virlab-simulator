@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VIRLAB-SIMULATOR - Interactive 3D PC Building Laboratory</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Modular Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body class="text-slate-800 text-sm overflow-hidden flex font-sans bg-slate-50">
+
+    <!-- 3D Canvas Viewport -->
+    <div id="canvas-container"></div>
+
+    <!-- HOTSPOTS 3D ANATOMY OVERLAY (Tahap 7) -->
+    <div id="hotspots-container" class="hidden"></div>
+
+    <!-- EXPLORE MODE HUD BANNER -->
+    <div id="explore-mode-banner"
+        class="hidden fixed top-20 sm:top-24 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 text-white text-xs px-5 py-2.5 rounded-full shadow-2xl backdrop-blur-md border border-slate-700/80 flex items-center gap-3 pointer-events-auto">
+        <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></div>
+        <span><b>Mode Eksplorasi 3D Aktif:</b> Klik titik anatomi bercahaya untuk mengamati detail dan fungsi komponen.</span>
+    </div>
+
+    <!-- HOTSPOT DETAIL FLOATING CARD -->
+    <div id="hotspot-detail-card"
+        class="hidden fixed bottom-6 left-6 right-6 sm:right-auto sm:w-96 glass-panel p-5 rounded-3xl shadow-2xl border border-slate-200/90 z-50 pointer-events-auto flex flex-col gap-3 bg-white/95 backdrop-blur-xl">
+    </div>
+
+    <!-- ROTATION GUIDE BANNER FOR SMARTPHONE PORTRAIT -->
+    <div id="portrait-banner"
+        class="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-blue-600/95 text-white text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-2.5 backdrop-blur-md pointer-events-auto transition-all duration-300 border border-blue-400/40">
+        <i class="fas fa-mobile-screen-button rotate-90 text-amber-300 animate-pulse text-sm"></i>
+        <span class="font-medium">Putar perangkat ke posisi <b>landscape</b> untuk pengalaman simulasi lab terbaik.</span>
+        <button id="btn-close-portrait-banner" class="ml-1 text-white/80 hover:text-white p-1 rounded focus:outline-none" title="Tutup panduan">
+            <i class="fas fa-times text-xs"></i>
+        </button>
+    </div>
+
+    <!-- START MENU SCREEN -->
+    <div id="start-menu"
+        class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-100/75 backdrop-blur-md transition-opacity duration-1000 p-4">
+        <div class="glass-panel p-8 sm:p-12 rounded-3xl max-w-lg w-full text-center flex flex-col items-center border border-slate-200/90 shadow-2xl relative overflow-hidden">
+            <!-- Decorative Tech Glow -->
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-semibold text-xs tracking-wider uppercase mb-5 shadow-sm">
+                <i class="fas fa-microchip"></i>
+                <span>Professional Edition</span>
+            </div>
+
+            <div class="title-animate text-center mb-8 pointer-events-none">
+                <h1
+                    class="text-4xl sm:text-6xl font-black mb-2 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 drop-shadow-sm">
+                    VIRLAB-SIMULATOR
+                </h1>
+                <p class="text-slate-500 tracking-[0.25em] uppercase text-xs sm:text-sm font-semibold">Interactive 3D Hardware Laboratory</p>
+            </div>
+
+            <div class="flex flex-col gap-3.5 w-full sm:w-80">
+                <button id="btn-start"
+                    class="px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 active:translate-y-0 border border-blue-400/40 flex items-center justify-center gap-3">
+                    <i class="fas fa-play"></i> Mulai Simulasi
+                </button>
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button id="btn-start-help"
+                        class="px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all border border-slate-200 hover:border-blue-300 shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-gamepad text-blue-600"></i> Panduan
+                    </button>
+                    <button id="btn-about"
+                        class="px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all border border-slate-200 hover:border-blue-300 shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-info-circle text-blue-600"></i> Tentang
+                    </button>
+                </div>
+                <button id="btn-start-fullscreen"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-semibold text-xs transition-all border border-slate-200 hover:border-blue-300 shadow-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-expand text-blue-600"></i> Mode Layar Penuh (Landscape)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT MODAL POP-UP -->
+    <div id="about-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center transform scale-95 transition-transform duration-300"
+            id="about-content">
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-4 text-blue-600 text-3xl shadow-inner">
+                <i class="fas fa-laptop-code"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 mb-1">Tentang Simulator</h2>
+            <p class="text-xs text-blue-600 font-semibold tracking-wider uppercase mb-6">Interactive 3D PC Lab</p>
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-6">
+                <p class="text-xs text-slate-500 mb-2 font-medium">Created By:</p>
+                <p class="font-bold text-slate-800 text-base">Chelly Satya Carsa Thesar</p>
+                <div class="text-slate-400 text-xs my-1">&amp;</div>
+                <p class="font-bold text-slate-800 text-base">Rauhul Jannah</p>
+            </div>
+            <button id="btn-close-about"
+                class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all w-full shadow-md">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- HELP MODAL POP-UP (Panduan Kontrol) -->
+    <div id="help-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-lg w-full transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto"
+            id="help-content">
+            <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-xl">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">Panduan Navigasi & Kontrol</h2>
+                        <span class="text-xs text-slate-500">Laboratorium Virtual Interaktif</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-left space-y-2.5 mb-6 text-xs sm:text-sm">
+                <div class="flex items-start bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <div class="w-8 flex justify-center text-blue-600 text-lg mt-0.5"><i class="fas fa-mobile-screen"></i></div>
+                    <div class="text-slate-700 ml-2"><b>Layar Sentuh (Smartphone / Tablet):</b> Gunakan analog kiri untuk berjalan, tombol kanan bawah untuk naik/turun, dan usap layar untuk memutar kamera. Gunakan tombol <b>Layar Penuh</b> untuk mengunci posisi landscape & menyembunyikan bilah URL, serta tombol <b>Mata</b> untuk menyembunyikan menu saat mengamati rig PC.</div>
+                </div>
+                <div class="flex items-start bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <div class="w-8 flex justify-center text-blue-600 text-lg mt-0.5"><i class="fas fa-computer-mouse"></i></div>
+                    <div class="text-slate-700 ml-2"><b>Mouse (Desktop):</b> Klik & drag untuk memutar kamera / geser objek dongle USB, scroll wheel untuk zoom in/out.</div>
+                </div>
+                <div class="flex items-start bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <div class="w-8 flex justify-center text-blue-600 text-lg mt-0.5"><i class="fas fa-keyboard"></i></div>
+                    <div class="text-slate-700 ml-2"><b>Keyboard:</b> <b>WASD / QE</b> gerak mendatar, <b>Spasi / Shift</b> naik/turun, <b>F</b> Layar Penuh (Auto Landscape), <b>H</b> Sembunyikan/Tampilkan Menu.</div>
+                </div>
+                <div class="bg-blue-50/80 p-3.5 rounded-xl border border-blue-200 text-blue-900 leading-relaxed shadow-sm">
+                    <div class="font-bold flex items-center gap-2 mb-1 text-blue-700">
+                        <i class="fas fa-hand-pointer text-amber-500"></i> Interaksi Objek 3D Langsung:
+                    </div>
+                    <div class="text-xs space-y-1 text-slate-700 pl-6">
+                        <p>1. Klik pada <b>Cokrol Listrik</b>, <b>Saklar Monitor</b>, & <b>Tombol Daya PC</b>.</p>
+                        <p>2. <b>Drag & Drop</b> USB Dongle ke arah casing PC untuk menghubungkan keyboard nirkabel.</p>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-close-help"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all w-full shadow-md shadow-blue-500/20">
+                <i class="fas fa-check mr-2"></i> Saya Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- RESET CONFIRMATION MODAL -->
+    <div id="reset-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 p-6 sm:p-7 rounded-3xl shadow-2xl max-w-md w-full transform scale-95 transition-transform duration-300"
+            id="reset-content">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-lg">
+                    <i class="fas fa-rotate-left"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 leading-tight">Konfirmasi Reset Simulasi</h2>
+                    <span class="text-xs text-slate-500">Pilih mode perakitan komputer yang diinginkan</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed mb-5">
+                Apakah Anda ingin memulai perakitan mandiri dari awal (0/8 komponen) atau memuat konfigurasi PC Flagship lengkap siap pakai?
+            </p>
+
+            <div class="space-y-2.5 mb-5">
+                <button id="btn-reset-empty"
+                    class="w-full p-3 rounded-2xl bg-white hover:bg-rose-50 border border-rose-200 text-left transition flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-sm font-bold">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800 group-hover:text-rose-700">Mulai dari Awal (Kosong 0/8)</div>
+                            <div class="text-[11px] text-slate-500">Simulasi belajar merakit tahap demi tahap dari sasis</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-slate-400 group-hover:text-rose-600"></i>
+                </button>
+
+                <button id="btn-reset-showcase"
+                    class="w-full p-3 rounded-2xl bg-white hover:bg-blue-50 border border-blue-200 text-left transition flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800 group-hover:text-blue-700">Muat Showcase PC (Lengkap 8/8)</div>
+                            <div class="text-[11px] text-slate-500">Konfigurasi PC lengkap siap dinyalakan & booting</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+                </button>
+            </div>
+
+            <button id="btn-close-reset"
+                class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-all w-full text-xs">
+                Batal
+            </button>
+        </div>
+    </div>
+
+    <!-- ASSEMBLY STEP GUIDE MODAL -->
+    <div id="guide-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 p-6 sm:p-7 rounded-3xl shadow-2xl max-w-lg w-full transform scale-95 transition-transform duration-300 max-h-[88vh] flex flex-col"
+            id="guide-content">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-lg">
+                        <i class="fas fa-compass"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 leading-tight">Panduan Urutan Perakitan PC</h2>
+                        <span class="text-xs text-slate-500">Standar Alur Kerja Perakitan Laboratorium Komputer</span>
+                    </div>
+                </div>
+                <button id="btn-close-guide" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto space-y-2.5 pr-1 text-xs" id="guide-steps-container">
+                <!-- Diisi secara dinamis oleh JavaScript -->
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 mt-3 shrink-0 flex justify-end">
+                <button id="btn-done-guide" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all text-xs shadow-md shadow-blue-500/20">
+                    Tutup Panduan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL (Pengaturan Grafis, Lingkungan, Kamera & Kontrol) -->
+    <div id="settings-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 p-6 sm:p-7 rounded-3xl shadow-2xl max-w-md w-full transform scale-95 transition-transform duration-300 bg-white"
+            id="settings-content">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-lg">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 leading-tight">Pengaturan Simulator</h2>
+                        <span class="text-xs text-slate-500">Kualitas Grafis & Preferensi Laboratorium</span>
+                    </div>
+                </div>
+                <button id="btn-close-settings" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <!-- 1. Kualitas Grafis -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-tachometer-alt text-blue-600"></i> Kualitas Grafis & Bayangan:
+                    </label>
+                    <div class="grid grid-cols-3 gap-2" id="graphics-quality-options">
+                        <button class="btn-quality p-2.5 rounded-xl border text-center transition font-semibold" data-quality="low">
+                            <div class="font-bold text-xs">Rendah</div>
+                            <div class="text-[10px] text-slate-400">Ringan / Baterai</div>
+                        </button>
+                        <button class="btn-quality p-2.5 rounded-xl border text-center transition font-semibold" data-quality="medium">
+                            <div class="font-bold text-xs">Sedang</div>
+                            <div class="text-[10px] text-slate-400">Seimbang</div>
+                        </button>
+                        <button class="btn-quality p-2.5 rounded-xl border text-center transition font-semibold" data-quality="high">
+                            <div class="font-bold text-xs">Tinggi</div>
+                            <div class="text-[10px] text-slate-400">Detail Maksimal</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Preset Lingkungan -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-palette text-indigo-600"></i> Preset Suasana Ruangan:
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="opt-env-clean" class="p-2.5 rounded-xl border bg-slate-50 hover:bg-blue-50 text-slate-700 font-semibold text-center transition">
+                            <i class="fas fa-lightbulb text-blue-600 block mb-1"></i> Lab Bersih
+                        </button>
+                        <button id="opt-env-rgb" class="p-2.5 rounded-xl border bg-slate-50 hover:bg-purple-50 text-slate-700 font-semibold text-center transition">
+                            <i class="fas fa-gamepad text-purple-600 block mb-1"></i> Kamar RGB
+                        </button>
+                        <button id="opt-env-basic" class="p-2.5 rounded-xl border bg-slate-50 hover:bg-amber-50 text-slate-700 font-semibold text-center transition">
+                            <i class="fas fa-warehouse text-amber-600 block mb-1"></i> Bengkel Kayu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Kamera & Rig Quick Action -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-camera text-cyan-600"></i> Pintasan Kamera & Simulasi:
+                    </label>
+                    <div class="flex gap-2">
+                        <button id="opt-reset-camera" class="flex-1 p-2.5 rounded-xl border bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold flex items-center justify-center gap-1.5 transition">
+                            <i class="fas fa-video text-blue-600"></i> Reset Sudut Kamera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 mt-5 flex justify-end">
+                <button id="btn-done-settings" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition">
+                    Tutup Pengaturan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEARNING CENTER MODAL (12 Poin Wajib Edukasi Perangkat Keras) -->
+    <div id="learning-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-md transition-opacity opacity-0 duration-300 p-3 sm:p-6">
+        <div class="glass-panel border border-slate-200 rounded-3xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 bg-white"
+            id="learning-content">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/25">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Pusat Pembelajaran Perangkat Keras</h2>
+                        <span class="text-xs text-slate-500">Standar 12 Aspek Edukasi Komponen Laboratorium Komputer</span>
+                    </div>
+                </div>
+                <button id="btn-close-learning" class="w-9 h-9 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content (Sidebar + Main Content) -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <!-- Sidebar Kategori -->
+                <div class="w-full md:w-64 bg-slate-50/80 border-b md:border-b-0 md:border-r border-slate-200 p-3 overflow-y-auto shrink-0 flex md:flex-col gap-1.5"
+                    id="learning-categories-list">
+                    <!-- Diisi dinamis -->
+                </div>
+
+                <!-- Main Content Body 12 Poin -->
+                <div class="flex-1 p-4 sm:p-6 overflow-y-auto bg-slate-50/30" id="learning-detail-body">
+                    <!-- Diisi dinamis oleh renderLearningContent -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUIZ MODAL (Kuis Interaktif Edukatif) -->
+    <div id="quiz-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-md transition-opacity opacity-0 duration-300 p-4">
+        <div class="glass-panel border border-slate-200 rounded-3xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 bg-white"
+            id="quiz-content">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg shadow-md shadow-amber-500/25">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Kuis Interaktif Perangkat Keras</h2>
+                        <span class="text-xs text-slate-500">Evaluasi Pemahaman Arsitektur & Perakitan PC</span>
+                    </div>
+                </div>
+                <button id="btn-close-quiz" class="w-9 h-9 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center transition">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Quiz Body -->
+            <div class="p-4 sm:p-6 overflow-y-auto max-h-[75vh]" id="quiz-body">
+                <!-- Diisi dinamis oleh renderQuizQuestion -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING HUD RESTORE BUTTON (Muncul ketika menu disembunyikan untuk smartphone/layar bersih) -->
+    <button id="btn-floating-hud"
+        class="hidden fixed top-3 right-3 sm:top-4 sm:right-4 z-50 glass-panel px-3.5 py-2 rounded-2xl bg-white/95 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 shadow-xl transition-all duration-300 pointer-events-auto items-center gap-2 text-xs font-bold ring-2 ring-blue-500/20 active:scale-95"
+        title="Tampilkan Kembali Menu & Kontrol (H)">
+        <i class="fas fa-eye text-blue-600 text-sm"></i>
+        <span>Tampilkan Menu</span>
+    </button>
+
+    <!-- MAIN GAME HUD -->
+    <div id="game-ui-container" class="game-ui w-full h-full">
+        <div class="ui-layer w-full h-full flex flex-col justify-between p-3 sm:p-4 top-bar-container">
+            <!-- Top Bar -->
+            <div class="flex justify-between items-start gap-2">
+
+                <!-- BAGIAN KIRI: Info Status Perakitan & Dropdown Kategori -->
+                <div class="flex flex-col gap-2 relative z-50">
+                    <div class="glass-panel pointer-events-auto rounded-2xl p-3 sm:p-4 flex flex-col gap-1.5 brand-card shadow-sm border border-slate-200/90">
+                        <div class="flex items-center justify-between gap-2">
+                            <h1 class="brand-title text-base sm:text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 flex items-center tracking-tight">
+                                <i class="fas fa-vr-cardboard mr-2 text-blue-600"></i>VIRLAB-SIMULATOR
+                            </h1>
+                            <span id="system-status-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-300" title="Status Sistem: Menunggu Perakitan"></span>
+                        </div>
+                        <div class="assembly-status-wrapper flex justify-between items-center text-xs text-slate-500 pt-1 border-t border-slate-100">
+                            <span class="font-medium text-slate-600">Status Perakitan:</span>
+                            <span id="assembly-status-badge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] border border-slate-200">
+                                <span id="installed-count">0</span>/8 Komponen
+                            </span>
+                        </div>
+                        <!-- Banner Langkah Rekomendasi Selanjutnya -->
+                        <div id="assembly-guide-banner"
+                            class="mt-1 text-[11px] text-blue-800 bg-blue-50/90 hover:bg-blue-100/90 cursor-pointer px-2.5 py-1.5 rounded-xl border border-blue-200/70 flex items-center justify-between transition-all"
+                            title="Klik untuk membuka Panduan Urutan Perakitan">
+                            <div class="flex items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap">
+                                <i class="fas fa-compass text-blue-600"></i>
+                                <span class="font-semibold text-slate-700">Panduan:</span>
+                                <span id="next-step-label" class="font-bold text-blue-700 truncate">Langkah 1: Casing PC</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-[10px] text-blue-500 ml-1"></i>
+                        </div>
+                    </div>
+
+                    <!-- Wrapper Dropdown Kategori -->
+                    <div class="relative w-full">
+                        <button id="toggle-left-btn"
+                            class="glass-panel pointer-events-auto px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 transition-all font-semibold border border-slate-200 shadow-sm w-full flex justify-between items-center text-xs sm:text-sm">
+                            <span class="flex items-center"><i class="fas fa-boxes mr-2 text-blue-600"></i>Kategori Komponen</span>
+                            <i id="category-chevron" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Popup Panel Kategori -->
+                        <div id="category-panel-container"
+                            class="absolute top-full left-0 mt-2 w-64 sm:w-72 transition-all duration-300 origin-top transform opacity-100 scale-100 pointer-events-auto z-50">
+                            <div id="category-panel"
+                                class="glass-panel rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 w-full max-h-[50vh]">
+                                <div
+                                    class="p-3 bg-slate-50/90 border-b border-slate-200 backdrop-blur-md flex justify-between items-center shrink-0">
+                                    <h2 class="font-bold text-slate-700 uppercase tracking-wider text-xs">Pilih Kategori Komponen</h2>
+                                </div>
+                                <div class="flex flex-col overflow-y-auto p-2 gap-1 bg-white/70 h-full relative"
+                                    id="category-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BAGIAN KANAN: Mode Switcher, Kontrol Daya, Bantuan & Menu Utama -->
+                <div class="flex gap-2 sm:gap-3 items-center flex-wrap justify-end max-w-[70%] header-toolbar">
+                    <!-- MODE SWITCHER (Tahap 7: Assembly, Explore 3D, Learning Mode, Kuis) -->
+                    <div id="mode-switcher-container"
+                        class="glass-panel pointer-events-auto rounded-2xl p-1 sm:p-1.5 flex gap-1 items-center h-fit shadow-sm border border-slate-200/90 bg-white/90">
+                        <button id="btn-mode-assembly"
+                            class="mode-pill px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all bg-blue-600 text-white shadow-sm border border-blue-500"
+                            title="Mode Perakitan PC">
+                            <i class="fas fa-tools text-xs"></i><span class="hidden md:inline">Mode Perakitan</span>
+                        </button>
+                        <button id="btn-mode-explore"
+                            class="mode-pill px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-transparent"
+                            title="Mode Eksplorasi & Anatomi 3D">
+                            <i class="fas fa-cube text-xs"></i><span class="hidden md:inline">Eksplorasi 3D</span>
+                        </button>
+                        <button id="btn-mode-learning"
+                            class="mode-pill px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-transparent"
+                            title="Pusat Pembelajaran Hardware (12 Poin)">
+                            <i class="fas fa-book-open text-xs"></i><span class="hidden md:inline">Pusat Edukasi</span>
+                        </button>
+                        <button id="btn-open-quiz"
+                            class="mode-pill px-2 sm:px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80"
+                            title="Kuis Interaktif Hardware Komputer">
+                            <i class="fas fa-award text-amber-500 text-xs"></i><span class="hidden lg:inline">Kuis Hardware</span>
+                        </button>
+                    </div>
+
+                    <div class="glass-panel pointer-events-auto rounded-2xl p-1.5 flex gap-1.5 h-fit shadow-sm border border-slate-200/90">
+                        <button id="btn-reset-camera" class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition"
+                            title="Reset Sudut Kamera (Pusat Lab)"><i class="fas fa-video"></i></button>
+                        <button id="env-basic" class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 hover:text-slate-900"
+                            title="Bengkel Kayu"><i class="fas fa-warehouse"></i></button>
+                        <button id="env-rgb" class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-purple-600 hover:text-purple-700"
+                            title="Kamar Gamer RGB"><i class="fas fa-gamepad"></i></button>
+                        <button id="env-clean" class="px-2.5 sm:px-3 py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                            title="Studio / Lab Bersih"><i class="fas fa-lightbulb"></i></button>
+                        <button id="toggle-cables"
+                            class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-700 text-xs font-semibold flex items-center h-full">
+                            <i class="fas fa-network-wired mr-1.5 text-blue-600"></i><span class="hidden sm:inline">Kabel: Rapi</span>
+                        </button>
+                    </div>
+
+                    <div class="glass-panel pointer-events-auto rounded-2xl p-1.5 flex gap-2 items-center h-fit shadow-sm border border-slate-200/90">
+                        <div class="px-2.5 sm:px-3 py-1.5 flex items-center gap-2 border-r border-slate-200">
+                            <span class="text-xs text-slate-500 font-bold uppercase hidden sm:inline">Listrik</span>
+                            <i class="fas fa-bolt text-slate-500 sm:hidden"></i>
+                            <div id="power-indicator"
+                                class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></div>
+                        </div>
+                        <button id="reset-btn"
+                            class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition font-semibold border border-rose-200"
+                            title="Reset PC ke Awal">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button id="power-btn"
+                            class="px-3 sm:px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition shadow-sm border border-slate-300 text-xs sm:text-sm flex items-center">
+                            <i class="fas fa-power-off text-slate-500 sm:mr-2"></i><span class="hidden sm:inline">Nyalakan PC</span>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-1.5 h-fit">
+                        <button id="btn-fullscreen"
+                            class="glass-panel pointer-events-auto px-3 sm:px-3.5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition-all font-semibold border border-slate-200 flex items-center shadow-sm h-fit"
+                            title="Mode Layar Penuh (Auto Landscape - F)">
+                            <i class="fas fa-expand text-base"></i>
+                        </button>
+                        <button id="btn-toggle-hud"
+                            class="glass-panel pointer-events-auto px-3 sm:px-3.5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition-all font-semibold border border-slate-200 flex items-center shadow-sm h-fit"
+                            title="Sembunyikan / Tampilkan Menu (Mode Bersih - H)">
+                            <i class="fas fa-eye-slash text-base"></i>
+                        </button>
+                        <button id="btn-settings"
+                            class="glass-panel pointer-events-auto px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-all font-semibold border border-slate-200 flex items-center shadow-sm h-fit"
+                            title="Pengaturan Kualitas Grafis & Simulator">
+                            <i class="fas fa-cog text-base"></i>
+                        </button>
+                        <button id="btn-help"
+                            class="glass-panel pointer-events-auto px-3.5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-blue-600 transition-all font-semibold border border-slate-200 flex items-center shadow-sm h-fit"
+                            title="Panduan Kontrol">
+                            <i class="fas fa-question-circle text-base"></i>
+                        </button>
+                        <button id="btn-back-menu"
+                            class="glass-panel pointer-events-auto px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition-all font-semibold border border-slate-200 flex items-center shadow-sm h-fit"
+                            title="Kembali ke Menu Utama">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIRTUAL JOYSTICK (POJOK KIRI BAWAH) -->
+            <div id="joystick-zone"
+                class="absolute bottom-6 left-6 w-28 h-28 glass-panel rounded-full border border-blue-400/40 bg-white/70 flex items-center justify-center pointer-events-auto z-40 touch-none shadow-lg">
+                <div id="joystick-knob"
+                    class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-md transform transition-transform duration-75 ease-out flex items-center justify-center text-white/80">
+                    <i class="fas fa-arrows-alt text-sm"></i>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN: Pilihan Komponen (Tanpa Harga, Berisi Spesifikasi Teknis) -->
+            <div id="inventory-panel"
+                class="absolute right-4 top-24 bottom-24 w-80 glass-panel pointer-events-auto rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 hidden-panel z-40">
+                <div
+                    class="p-3.5 bg-slate-50/90 border-b border-slate-200 flex justify-between items-center backdrop-blur-md">
+                    <div>
+                        <h2 class="font-bold text-slate-800 uppercase tracking-wider text-xs"
+                            id="current-category-title">Pilih Kategori</h2>
+                        <span class="text-xs text-blue-600 font-medium mt-0.5 block" id="category-count">0 item</span>
+                    </div>
+                    <button id="close-right-panel"
+                        class="p-2 bg-white hover:bg-slate-100 rounded-xl text-slate-600 border border-slate-200 transition"
+                        title="Sembunyikan Pilihan">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col overflow-y-auto p-3 gap-2.5 bg-white/50 h-full" id="parts-list"></div>
+            </div>
+
+            <!-- TOMBOL BUKA PANEL KANAN -->
+            <button id="open-right-panel"
+                class="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-auto bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-l-2xl shadow-xl border-y border-l border-blue-400 hidden flex-col items-center gap-2 transition-all z-40">
+                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-cogs text-lg"></i>
+            </button>
+
+            <!-- VIRTUAL ELEVATION CONTROLS (KANAN BAWAH, KIRI TERMINAL) -->
+            <div id="elevation-controls"
+                class="absolute bottom-6 right-20 glass-panel rounded-2xl flex flex-col items-center pointer-events-auto z-40 shadow-lg overflow-hidden border border-slate-200/90 bg-white/80">
+                <button id="btn-move-up"
+                    class="w-11 h-11 flex justify-center items-center hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-colors active:bg-blue-100 touch-none"
+                    title="Naik ke Atas (Spasi)">
+                    <i class="fas fa-chevron-up text-base"></i>
+                </button>
+                <div class="w-7 h-[1px] bg-slate-200"></div>
+                <button id="btn-move-down"
+                    class="w-11 h-11 flex justify-center items-center hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-colors active:bg-blue-100 touch-none"
+                    title="Turun ke Bawah (Shift)">
+                    <i class="fas fa-chevron-down text-base"></i>
+                </button>
+            </div>
+
+            <!-- TERMINAL LOG (POJOK KANAN BAWAH) -->
+            <div id="terminal-popup"
+                class="absolute bottom-20 right-4 w-72 sm:w-80 h-64 glass-panel pointer-events-auto rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-slate-700/80 transition-all duration-300 transform scale-0 origin-bottom-right z-40 opacity-0 pointer-events-none bg-slate-900 text-white">
+                <div
+                    class="p-3 bg-slate-950/90 border-b border-slate-800 flex justify-between items-center backdrop-blur-md">
+                    <h2 class="font-bold text-slate-200 text-xs tracking-wider uppercase flex items-center">
+                        <i class="fas fa-terminal mr-2 text-cyan-400"></i>Sistem Log
+                    </h2>
+                    <button id="close-terminal-btn" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                <div id="terminal-content"
+                    class="w-full h-full p-3 overflow-y-auto flex flex-col justify-start text-xs text-slate-300 bg-slate-950 font-mono scroll-smooth space-y-1">
+                    <div class="terminal-line text-cyan-400">> VIRLAB BIOS Initialize v4.2 Pro</div>
+                    <div class="terminal-line text-emerald-400">> Laboratorium simulasi siap digunakan.</div>
+                </div>
+            </div>
+
+            <!-- Terminal Toggle Button -->
+            <button id="toggle-terminal-btn"
+                class="absolute bottom-6 right-6 pointer-events-auto bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-600 p-3.5 rounded-full shadow-lg border border-slate-200 transition-all z-40 flex items-center justify-center backdrop-blur-md group"
+                title="Buka Sistem Log">
+                <i class="fas fa-list-alt text-lg group-hover:text-blue-600 transition-colors"></i>
+                <!-- Red dot notification badge -->
+                <span id="log-badge"
+                    class="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-white hidden shadow-[0_0_6px_rgba(244,63,94,0.9)]"></span>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Application Master Controller -->
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
